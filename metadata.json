@@ -1,0 +1,6 @@
+{
+  "name": "SadaStudio",
+  "description": "Urdu Voice Cloning & Neural Text-to-Speech Studio with acoustic voice DNA profiling, Roman Urdu transliteration, and multi-speaker dialogue synthesis.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

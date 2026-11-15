@@ -1,0 +1,153 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-canvas: var(--studio-canvas);
+  --color-panel: var(--studio-panel);
+  --color-recessed: var(--studio-recessed);
+  --color-line: var(--studio-line);
+  --color-accent: var(--studio-accent);
+  --color-accent-hover: var(--studio-accent-hover);
+  --color-accent-soft: var(--studio-accent-soft);
+  --color-accent-ink: var(--studio-accent-ink);
+  --color-accent-border: var(--studio-accent-border);
+  --color-accent-bar: var(--studio-accent-bar);
+}
+
+@layer base {
+  :root {
+    --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+    --font-urdu: "Noto Nastaliq Urdu", "Noto Sans Arabic", serif;
+
+    /* Daylight Studio Neutral Hierarchy */
+    --studio-canvas: #f4f5f7;
+    --studio-panel: #ffffff;
+    --studio-recessed: #eceff4;
+    --studio-line: #dfe4ec;
+
+    /* Default Accent: Emerald Console */
+    --studio-accent: #047857;
+    --studio-accent-hover: #065f46;
+    --studio-accent-soft: #ecfdf5;
+    --studio-accent-ink: #065f46;
+    --studio-accent-border: #a7f3d0;
+    --studio-accent-bar: #059669;
+  }
+
+  :root.dark {
+    /* Dark Mastering Room Neutral Hierarchy */
+    --studio-canvas: #090b0f;
+    --studio-panel: #11151d;
+    --studio-recessed: #181d28;
+    --studio-line: #232a38;
+
+    --studio-accent: #059669;
+    --studio-accent-hover: #10b981;
+    --studio-accent-soft: #062c22;
+    --studio-accent-ink: #6ee7b7;
+    --studio-accent-border: #065f46;
+    --studio-accent-bar: #34d399;
+  }
+
+  /* Broadcast Indigo */
+  :root[data-palette="indigo"] {
+    --studio-accent: #4338ca;
+    --studio-accent-hover: #3730a3;
+    --studio-accent-soft: #eef2ff;
+    --studio-accent-ink: #3730a3;
+    --studio-accent-border: #c7d2fe;
+    --studio-accent-bar: #4f46e5;
+  }
+  :root.dark[data-palette="indigo"] {
+    --studio-accent: #4f46e5;
+    --studio-accent-hover: #6366f1;
+    --studio-accent-soft: #1b1947;
+    --studio-accent-ink: #a5b4fc;
+    --studio-accent-border: #3730a3;
+    --studio-accent-bar: #818cf8;
+  }
+
+  /* Analog Gold */
+  :root[data-palette="amber"] {
+    --studio-accent: #b45309;
+    --studio-accent-hover: #92400e;
+    --studio-accent-soft: #fffbeb;
+    --studio-accent-ink: #92400e;
+    --studio-accent-border: #fde68a;
+    --studio-accent-bar: #d97706;
+  }
+  :root.dark[data-palette="amber"] {
+    --studio-accent: #b45309;
+    --studio-accent-hover: #d97706;
+    --studio-accent-soft: #2b1906;
+    --studio-accent-ink: #fcd34d;
+    --studio-accent-border: #78350f;
+    --studio-accent-bar: #fbbf24;
+  }
+
+  /* Crimson Noir */
+  :root[data-palette="crimson"] {
+    --studio-accent: #be123c;
+    --studio-accent-hover: #9f1239;
+    --studio-accent-soft: #fff1f2;
+    --studio-accent-ink: #9f1239;
+    --studio-accent-border: #fecdd3;
+    --studio-accent-bar: #e11d48;
+  }
+  :root.dark[data-palette="crimson"] {
+    --studio-accent: #be123c;
+    --studio-accent-hover: #e11d48;
+    --studio-accent-soft: #2e0b16;
+    --studio-accent-ink: #fda4af;
+    --studio-accent-border: #881337;
+    --studio-accent-bar: #fb7185;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--studio-canvas);
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+.font-urdu {
+  font-family: var(--font-urdu);
+  line-height: 2.3;
+}
+
+.font-urdu-compact {
+  font-family: "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif;
+  line-height: 1.9;
+}
+
+.font-mono-tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.65);
+}
