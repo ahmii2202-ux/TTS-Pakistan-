@@ -29,9 +29,10 @@ export function splitTextIntoSpeechChunks(
 
   const sentences: string[] = [];
   for (const paragraph of paragraphs) {
-    // Split on Urdu full stop (۔), Urdu question (؟), Latin (. ? !), preserving punctuation
+    // Split on Urdu full stop (۔), Urdu question (؟), Latin (. ? !) even if trailing space is omitted,
+    // without breaking ellipses (...) or double punctuation (?!)
     const parts = paragraph
-      .split(/(?<=[۔؟.!?])\s+/)
+      .split(/(?<=[۔؟.!?])(?:\s+|(?=[A-Za-z0-9\u0600-\u06FF<|]))/)
       .map((s) => s.trim())
       .filter(Boolean);
     if (parts.length > 0) {

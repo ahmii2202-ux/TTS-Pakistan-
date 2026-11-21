@@ -125,6 +125,79 @@ export function mergeWavBase64Chunks(base64Chunks: string[]): string {
   return uint8ArrayToBase64(merged);
 }
 
+function encodeMonoPcm16Wav(samples: Float32Array, sampleRate: number): Uint8Array {
+  const dataSize = samples.length * 2;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+
+  const writeStr = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    offset += 2;
+  }
+
+  return new Uint8Array(buffer);
+}
+
+export async function ensureWavBase64(base64: string, mimeType = 'audio/wav'): Promise<string> {
+  if (!base64) return base64;
+  const raw = base64ToUint8Array(base64);
+  if (
+    raw.length >= 12 &&
+    raw[0] === 0x52 &&
+    raw[1] === 0x49 &&
+    raw[2] === 0x46 &&
+    raw[3] === 0x46
+  ) {
+    return base64;
+  }
+
+  const blob = new Blob([raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength)], {
+    type: mimeType || 'audio/mpeg',
+  });
+  const arrayBuffer = await blob.arrayBuffer();
+  const AudioCtx =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const ctx = new AudioCtx();
+  try {
+    const decoded = await ctx.decodeAudioData(arrayBuffer);
+    const targetRate = 24000;
+    const frameCount = Math.max(1, Math.ceil(decoded.duration * targetRate));
+    const offline = new OfflineAudioContext(1, frameCount, targetRate);
+    const src = offline.createBufferSource();
+    src.buffer = decoded;
+    src.connect(offline.destination);
+    src.start(0);
+    const rendered = await offline.startRendering();
+    const wavBytes = encodeMonoPcm16Wav(rendered.getChannelData(0), targetRate);
+    return uint8ArrayToBase64(wavBytes);
+  } finally {
+    await ctx.close().catch(() => {});
+  }
+}
+
 export function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

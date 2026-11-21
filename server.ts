@@ -221,6 +221,9 @@ function buildDeliveryStyle(params: {
   if (customDirection && customDirection.trim()) {
     parts.push(`Director note: ${customDirection.trim()}`);
   }
+  parts.push(
+    'Read the provided script strictly verbatim from start to finish exactly once, without repeating, skipping, or adding any line.'
+  );
 
   return parts.join(' ');
 }
@@ -400,10 +403,13 @@ function mp3BufferToWav24kMono(mp3Buffer: Buffer): Promise<Buffer> {
   });
 }
 
-function splitNeuralSubChunks(text: string, maxChars = 1100): string[] {
+function splitNeuralSubChunks(text: string, maxChars = 750): string[] {
   const clean = text.trim();
   if (clean.length <= maxChars) return [clean];
-  const sentences = clean.split(/(?<=[۔؟.!?])\s+/).filter(Boolean);
+  const sentences = clean
+    .split(/(?<=[۔؟.!?])(?:\s+|(?=[A-Za-z0-9\u0600-\u06FF<|]))/)
+    .map((s) => s.trim())
+    .filter(Boolean);
   const out: string[] = [];
   let buf = '';
   for (const s of sentences) {
@@ -476,14 +482,25 @@ async function synthesizeSingleNeuralSegment(
           : { rate: prosody.rate, pitch: prosody.pitch };
 
       const mp3Buf = await new Promise<Buffer>((resolve, reject) => {
+        let settled = false;
         const { audioStream } = tts.toStream(safeText, streamOpts);
         const chunks: Buffer[] = [];
         audioStream.on('data', (chunk: Buffer) => {
-          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+          if (!settled) {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+          }
         });
-        audioStream.on('error', (err: Error) => reject(err));
+        audioStream.on('error', (err: Error) => {
+          if (!settled) {
+            settled = true;
+            reject(err);
+          }
+        });
         audioStream.on('close', () => {
-          resolve(Buffer.concat(chunks));
+          if (!settled) {
+            settled = true;
+            resolve(Buffer.concat(chunks));
+          }
         });
       });
 
@@ -538,7 +555,7 @@ async function synthesizeUnlimitedNeural(params: {
     baseVoice: params.baseVoice,
   });
 
-  const subSegments = splitNeuralSubChunks(cleanedRaw, 1100);
+  const subSegments = splitNeuralSubChunks(cleanedRaw, 750);
   const wavList: string[] = [];
   for (const seg of subSegments) {
     const wavB64 = await synthesizeSingleNeuralSegment(seg, neuralVoice, prosody);

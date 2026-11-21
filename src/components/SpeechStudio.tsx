@@ -200,7 +200,7 @@ export const SpeechStudio: React.FC<SpeechStudioProps> = ({
   const effectiveDir = textDir === 'auto' ? (isUrdu ? 'rtl' : 'ltr') : textDir;
 
   const wordCount = useMemo(() => countWords(scriptText), [scriptText]);
-  const activeChunkSize = engine === 'unlimited-neural' ? 500 : 520;
+  const activeChunkSize = engine === 'unlimited-neural' ? 360 : 190;
   const plannedChunks = useMemo(
     () => splitTextIntoSpeechChunks(scriptText, activeChunkSize),
     [scriptText, activeChunkSize]
@@ -307,13 +307,16 @@ export const SpeechStudio: React.FC<SpeechStudioProps> = ({
   };
 
   const runSynthesis = async (resumeCheckpoint?: SynthesisCheckpoint | null) => {
+    if (isGenerating) return;
     const sourceText = resumeCheckpoint ? resumeCheckpoint.sourceText : scriptText;
     if (!sourceText.trim()) {
       setError('Please enter Urdu or English text to synthesize.');
       return;
     }
 
-    const chunkWordLimit = resumeCheckpoint ? resumeCheckpoint.chunkWordLimit || 280 : 520;
+    const chunkWordLimit = resumeCheckpoint
+      ? resumeCheckpoint.chunkWordLimit || 190
+      : activeChunkSize;
     const chunks = splitTextIntoSpeechChunks(sourceText, chunkWordLimit);
     if (chunks.length === 0) return;
 
@@ -422,7 +425,7 @@ export const SpeechStudio: React.FC<SpeechStudioProps> = ({
 
         const chunk = chunks[i];
 
-        if (i > startIndex && chunks.length > 3 && activeRunModel !== 'unlimited-neural') {
+        if (i > startIndex && chunks.length > 2 && activeRunModel !== 'unlimited-neural') {
           setProgressState({
             completedChunks: i,
             totalChunks: chunks.length,
@@ -430,7 +433,7 @@ export const SpeechStudio: React.FC<SpeechStudioProps> = ({
             totalWords,
             statusNote: 'Pacing requests smoothly for long-form stability...',
           });
-          const ok = await waitInterruptible(1800);
+          const ok = await waitInterruptible(1400);
           if (!ok) break;
         }
 
